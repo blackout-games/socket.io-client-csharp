@@ -8,5 +8,9 @@
 	  "networking",
 	  "socket.io"
 	],
-	"category": "Networking"
+	"category": "Networking",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/blackout-games/socket.io-client-csharp.git#upm"
+	  }
   }
