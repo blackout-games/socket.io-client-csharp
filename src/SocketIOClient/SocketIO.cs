@@ -111,18 +111,66 @@ namespace SocketIOClient
         static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
         #region Socket.IO event
-        public event EventHandler OnConnected;
-        //public event EventHandler<string> OnConnectError;
-        //public event EventHandler<string> OnConnectTimeout;
-        public event EventHandler<string> OnError;
-        public event EventHandler<string> OnDisconnected;
-        //public event EventHandler<string> OnReconnectAttempt;
-        public event EventHandler<int> OnReconnecting;
-        //public event EventHandler<string> OnReconnectError;
-        public event EventHandler<Exception> OnReconnectFailed;
-        public event EventHandler OnPing;
-        public event EventHandler<TimeSpan> OnPong;
-        public event EventHandler<ReceivedEventArgs> OnReceivedEvent;
+        private event EventHandler _onConnected;
+        public event EventHandler OnConnected
+        {
+            add { _onConnected += value; }
+            remove { _onConnected -= value; }
+        }
+        
+        //private event EventHandler<string> OnConnectError;
+        //private event EventHandler<string> OnConnectTimeout;
+        private event EventHandler<string> _onError;
+        public event EventHandler<string> OnError
+        {
+            add => _onError += value;
+            remove => _onError -= value;
+        }
+        
+        private event EventHandler<string> _onDisconnected;
+        public event EventHandler<string> OnDisconnected
+        {
+            add => _onDisconnected += value;
+            remove => _onDisconnected -= value;
+        }
+        
+        //private event EventHandler<string> OnReconnectAttempt;
+        private event EventHandler<int> _onReconnecting;
+        public event EventHandler<int> OnReconnecting
+        {
+            add => _onReconnecting += value;
+            remove => _onReconnecting -= value;
+        }
+        
+        //private event EventHandler<string> OnReconnectError;
+        private event EventHandler<Exception> _onReconnectFailed;
+        public event EventHandler<Exception> OnReconnectFailed
+        {
+            add => _onReconnectFailed += value;
+            remove => _onReconnectFailed -= value;
+        }
+        
+        private event EventHandler _onPing;
+        public event EventHandler OnPing
+        {
+            add => _onPing += value;
+            remove => _onPing -= value;
+        }
+        
+        private event EventHandler<TimeSpan> _onPong;
+        public event EventHandler<TimeSpan> OnPong
+        {
+            add => _onPong += value;
+            remove => _onPong -= value;
+        }
+        
+        private event EventHandler<ReceivedEventArgs> _onReceivedEvent;
+        public event EventHandler<ReceivedEventArgs> OnReceivedEvent
+        {
+            add => _onReceivedEvent += value;
+            remove => _onReceivedEvent -= value;
+        }
+        
         internal event EventHandler<byte[]> OnBytesReceived;
         #endregion
 
@@ -146,7 +194,7 @@ namespace SocketIOClient
                 Client = this
             };
             Disconnected = true;
-            OnDisconnected += SocketIO_OnDisconnected;
+            _onDisconnected += SocketIO_OnDisconnected;
         }
 
         /// <summary>
@@ -184,7 +232,7 @@ namespace SocketIOClient
                             delayDouble += 2 * Options.RandomizationFactor;
                             if (delayDouble > Options.ReconnectionDelayMax)
                             {
-                                OnReconnectFailed?.Invoke(this, ex);
+                                _onReconnectFailed?.Invoke(this, ex);
                                 break;
                             }
                         }
@@ -420,7 +468,7 @@ namespace SocketIOClient
                     {
                         PingTime = DateTime.Now;
                         await Socket.SendMessageAsync("2");
-                        OnPing?.Invoke(this, new EventArgs());
+                        _onPing?.Invoke(this, new EventArgs());
                     }
                     catch (Exception ex) { Trace.TraceError(ex.ToString()); }
                 }
@@ -431,7 +479,7 @@ namespace SocketIOClient
         {
             Connected = true;
             Disconnected = false;
-            OnConnected?.Invoke(this, new EventArgs());
+            _onConnected?.Invoke(this, new EventArgs());
         }
 
         internal void InvokeBytesReceived(byte[] bytes)
@@ -445,14 +493,14 @@ namespace SocketIOClient
             {
                 Connected = false;
                 Disconnected = true;
-                OnDisconnected?.Invoke(this, reason);
+                _onDisconnected?.Invoke(this, reason);
                 _pingToken.Cancel();
             }
         }
 
         internal void InvokeError(string error)
         {
-            OnError?.Invoke(this, error);
+            _onError?.Invoke(this, error);
         }
 
         private async void SocketIO_OnDisconnected(object sender, string e)
@@ -471,7 +519,7 @@ namespace SocketIOClient
                     {
                         if (!Connected && Disconnected)
                         {
-                            OnReconnecting?.Invoke(this, ++attempt);
+                            _onReconnecting?.Invoke(this, ++attempt);
                             await ConnectCoreAsync(false);
                         }
                         break;
@@ -483,7 +531,7 @@ namespace SocketIOClient
                             delayDouble += 2 * Options.RandomizationFactor;
                             if (delayDouble > Options.ReconnectionDelayMax)
                             {
-                                OnReconnectFailed?.Invoke(this, ex);
+                                _onReconnectFailed?.Invoke(this, ex);
                             }
                         }
                     }
@@ -493,12 +541,12 @@ namespace SocketIOClient
 
         internal void InvokePong(TimeSpan ms)
         {
-            OnPong?.Invoke(this, ms);
+            _onPong?.Invoke(this, ms);
         }
 
         internal void InvokeReceivedEvent(ReceivedEventArgs args)
         {
-            OnReceivedEvent?.Invoke(this, args);
+            _onReceivedEvent?.Invoke(this, args);
         }
     }
 }
