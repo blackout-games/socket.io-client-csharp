@@ -111,7 +111,7 @@ namespace SocketIOClient
         static readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 1);
 
         #region Socket.IO event
-        private event EventHandler _onConnected;
+        private event EventHandler _onConnected = (x, y) => { };
         public event EventHandler OnConnected
         {
             add { _onConnected += value; }
@@ -120,14 +120,14 @@ namespace SocketIOClient
         
         //private event EventHandler<string> OnConnectError;
         //private event EventHandler<string> OnConnectTimeout;
-        private event EventHandler<string> _onError;
+        private event EventHandler<string> _onError = (x, y) => { };
         public event EventHandler<string> OnError
         {
             add => _onError += value;
             remove => _onError -= value;
         }
         
-        private event EventHandler<string> _onDisconnected;
+        private event EventHandler<string> _onDisconnected = (x, y) => { };
         public event EventHandler<string> OnDisconnected
         {
             add => _onDisconnected += value;
@@ -135,7 +135,7 @@ namespace SocketIOClient
         }
         
         //private event EventHandler<string> OnReconnectAttempt;
-        private event EventHandler<int> _onReconnecting;
+        private event EventHandler<int> _onReconnecting = (x, y) => { };
         public event EventHandler<int> OnReconnecting
         {
             add => _onReconnecting += value;
@@ -143,35 +143,41 @@ namespace SocketIOClient
         }
         
         //private event EventHandler<string> OnReconnectError;
-        private event EventHandler<Exception> _onReconnectFailed;
+        private event EventHandler<Exception> _onReconnectFailed = (x, y) => { };
         public event EventHandler<Exception> OnReconnectFailed
         {
             add => _onReconnectFailed += value;
             remove => _onReconnectFailed -= value;
         }
         
-        private event EventHandler _onPing;
+        private event EventHandler _onPing = (x, y) => { };
         public event EventHandler OnPing
         {
             add => _onPing += value;
             remove => _onPing -= value;
         }
         
-        private event EventHandler<TimeSpan> _onPong;
+        private event EventHandler<TimeSpan> _onPong = (x, y) => { };
         public event EventHandler<TimeSpan> OnPong
         {
             add => _onPong += value;
             remove => _onPong -= value;
         }
         
-        private event EventHandler<ReceivedEventArgs> _onReceivedEvent;
+        private event EventHandler<ReceivedEventArgs> _onReceivedEvent = (x, y) => { };
         public event EventHandler<ReceivedEventArgs> OnReceivedEvent
         {
             add => _onReceivedEvent += value;
             remove => _onReceivedEvent -= value;
         }
+
+        private event EventHandler<byte[]> _onBytesReceived = (x, y) => { };
+        internal event EventHandler<byte[]> OnBytesReceived
+        {
+            add => _onBytesReceived += value;
+            remove => _onBytesReceived -= value;
+        }
         
-        internal event EventHandler<byte[]> OnBytesReceived;
         #endregion
 
         private void Initialize()
@@ -484,7 +490,7 @@ namespace SocketIOClient
 
         internal void InvokeBytesReceived(byte[] bytes)
         {
-            OnBytesReceived?.Invoke(this, bytes);
+            _onBytesReceived?.Invoke(this, bytes);
         }
 
         internal void InvokeDisconnect(string reason)
